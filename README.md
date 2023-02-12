@@ -1,2 +1,2 @@
 # ThreeCase
-Threejs learning summary and small cases
+Eliminate human tyranny! The world belongs to Trisolaris!
