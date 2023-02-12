@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      canvas {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+      //获取canvas元素
+      let canvas = document.getElementById('canvas');
+      let gl = null;
+      //vanvas 宽高
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      //获取canvas绘图的上下文
+      if (canvas.getContext) {
+        try {
+          gl = canvas.getContext('webgl');
+        } catch (error) {
+          console.log(error);
+        }
+        if (gl) {
+          //使用webgl
+          //第一次创建webgl绘图上下文,需要设置窗口大小
+          gl.viewport(0, 0, canvas.width, canvas.height);
+          //创建着色器
+          let vertexShader = gl.createShader(gl.VERTEX_SHADER);
+          //创建顶点着色器的源码,需要编写glsl代码
+          //uniform 是创建全局变量
+          //varying 标识需要传递给片元着色器
+          gl.shaderSource(
+            vertexShader,
+
+            ` 
+            attribute vec4 a_Position;
+            uniform mat4 u_Mat;
+            varying vec4 v_Color;
+             void main() {
+            gl_Position = u_Mat * a_Position;
+            v_Color = gl_Position;
+         }`,
+          );
+          //编译顶点着色器
+          gl.compileShader(vertexShader);
+
+          //创建片元着色器
+          let fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+
+          //创建片元着色器的源码,需要编写glsl代码
+          //如果出现值的传递,  需要声明值的精度
+          gl.shaderSource(
+            fragmentShader,
+            ` 
+            precision mediump float;
+            varying vec4 v_Color;
+         void main(){
+            gl_FragColor = v_Color;
+         }
+        `,
+          );
+          //编译片元着色器
+          gl.compileShader(fragmentShader);
+
+          //创建程序链接顶点着色器和片元着色器
+          let program = gl.createProgram();
+
+          //链接顶点着色器和片元着色器
+          gl.attachShader(program, vertexShader);
+          gl.attachShader(program, fragmentShader);
+          //链接程序
+          gl.linkProgram(program);
+          //use程序进行渲染
+          gl.useProgram(program);
+
+          //创建顶端缓冲区对象
+          let vertextBuffer = gl.createBuffer();
+          //绑定定高点缓冲区对象
+          gl.bindBuffer(gl.ARRAY_BUFFER, vertextBuffer);
+          //想顶点缓冲区对象写入数据
+          let vertices = new Float32Array([0.0, 0.5, -0.5, -0.5, 0.5, -0.5]);
+          //gl.STATIC_DRAW 表示数据不会改变, gl.DANAMIC_DRAW标识数据会改变
+          gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+          //获取顶点着色器中的a_Position 变量的位置
+          let a_Position = gl.getAttribLocation(program, 'a_Position');
+          //将顶点缓冲区对象分配给a_Postion变量
+          gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+          //启动点点着色器中 的 a_Position变量
+          gl.enableVertexAttribArray(a_Position);
+
+          //清楚canvas
+          gl.clearColor(0, 0, 0, 0);
+          //清楚缓冲区
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          //绘制三角形
+          gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+          //创建单位矩阵
+          const scale = {
+            x: 0.5,
+            y: 0.5,
+            z: 0.5,
+          };
+          //   const mat = new Float32Array(
+          //     [
+          //         scale.x,0,0,0,
+          //         0,scale.y,0,0,
+          //         0,0,scale.z,0,
+          //         0,0,0,1.0,
+          //     ]
+          //   )
+          //   // 定义一个全局变量
+          //   const u_Mat = gl.getUniformLocation(program,'u_Mat');
+
+          //   gl.uniformMatrix4fv(u_Mat,false,mat)
+          //     //清楚canvas
+          //     gl.clearColor(0,0,0,0)
+          //   //清楚缓冲区
+          //   gl.clear(gl.COLOR_BUFFER_BIT)
+          //   //绘制三角形
+          //   gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+          function animate() {
+            scale.x -= 0.01;
+            scale.y -= 0.01;
+            scale.z -= 0.01;
+            const mat = new Float32Array([
+              scale.x,
+              0,
+              0,
+              0,
+              0,
+              scale.y,
+              0,
+              0,
+              0,
+              0,
+              scale.z,
+              0,
+              0,
+              0,
+              0,
+              1.0,
+            ]);
+
+            // 定义一个全局变量
+            const u_Mat = gl.getUniformLocation(program, 'u_Mat');
+            gl.uniformMatrix4fv(u_Mat, false, mat);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+            requestAnimationFrame(animate);
+          }
+          animate();
+        } else console.error('WEBGL context could not be created');
+      }
+    </script>
+  </body>
+</html>

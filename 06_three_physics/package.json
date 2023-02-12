@@ -1,0 +1,21 @@
+{
+  "name": "01_threejs_base",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "parcel src/index.html",
+    "build": "parcel build src/index.html"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cannon-es": "^0.19.0",
+    "dat.gui": "^0.7.9",
+    "gsap": "^3.10.4",
+    "three": "^0.142.0"
+  },
+  "devDependencies": {
+    "parcel": "^2.6.2"
+  }
+}
